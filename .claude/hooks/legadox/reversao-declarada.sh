@@ -33,8 +33,41 @@ CONTEUDO="$(legadox_campo '.tool_input.content')"
 # Ha task sendo marcada como concluida?
 printf '%s' "$CONTEUDO" | grep -qiE 'status:[[:space:]]*conclu' || legadox_permitir
 
-# Ha plano de reversao no mesmo conteudo?
+# A conferencia e POR TASK, nao pelo arquivo inteiro.
+#
+# Procurar "reversao" no conteudo todo faz uma task com plano de reversao valer
+# por todas as outras do mesmo arquivo: bastava uma declarar, e as demais fechavam
+# de graca. Um `tasks.md` sempre teve varias tasks, e o formato condensado
+# (`kind: plano`, sprint de fase unica num arquivo so) so tornou o arquivo maior.
+#
+# Recorta o bloco de cada task pelo marcador `- id:` e confere cada bloco que
+# esta indo para `concluida`.
+SEM_REVERSAO="$(printf '%s' "$CONTEUDO" | awk '
+  function avalia(   b) {
+    if (id == "" || !concluida) return
+    b = tolower(bloco)
+    gsub(/ã/, "a", b)
+    if (b !~ /revers(a|ao)|como reverter|rollback/) { print id; return }
+    if (b ~ /\{\{[^}]*\}\}/)                        { print id; return }
+    if (b ~ /a definir|pendente|nao se aplica|n\/a/)  { print id; return }
+  }
+  /^[ \t]*-[ \t]*id:/ {
+    avalia()
+    id = $0; sub(/^[ \t]*-[ \t]*id:[ \t]*/, "", id); sub(/[ \t]+$/, "", id)
+    bloco = ""; concluida = 0
+  }
+  { bloco = bloco "\n" $0 }
+  /status:[ \t]*conclu/ { concluida = 1 }
+  END { avalia() }
+')"
+
+# Sem marcador `- id:` no conteudo (Edit de um trecho solto, por exemplo), cai na
+# conferencia antiga sobre o texto todo: e o melhor que da para afirmar ali.
 tem_reversao() {
+  if printf '%s' "$CONTEUDO" | grep -qE '^[ \t]*-[ \t]*id:'; then
+    [ -z "$SEM_REVERSAO" ]
+    return
+  fi
   printf '%s' "$CONTEUDO" | grep -qiE 'revers(a|ã)o|como reverter|rollback' || return 1
   # Presente mas vazio ou por preencher nao conta.
   printf '%s' "$CONTEUDO" | grep -iA4 -E 'revers(a|ã)o|como reverter|rollback' \
