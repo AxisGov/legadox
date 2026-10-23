@@ -1,5 +1,5 @@
 ---
-name: cartografo
+name: legadox-cartografo
 description: Monta o PERFIL.md do projeto legado (Camada 1) e prova que o codigo alvo esta vivo (Camada 10). Use quando o modo legado precisa ser ligado, quando o PERFIL precisa ser atualizado, ou quando e preciso confirmar que um arquivo e de fato chamado antes de gastar esforco nele.
 tools: [Read, Glob, Grep, Bash, Write, Edit]
 model: inherit
