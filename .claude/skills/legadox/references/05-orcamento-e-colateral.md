@@ -37,10 +37,19 @@ Não contam:
 
 Como medir, antes de dar a task por concluída:
 
+```bash
+# Inclui alterações staged e unstaged de arquivos já rastreados.
+git diff HEAD --numstat -- <arquivos de producao>
+# Lista arquivos novos ainda não adicionados ao índice do Git.
+git ls-files --others --exclude-standard -- <arquivos de producao>
 ```
-git diff --stat -- <arquivos de producao>
-git diff --numstat | awk '{a+=$1; r+=$2} END {print a+r" linhas, "NR" arquivos"}'
-```
+
+A primeira saída precisa ser filtrada para **código de produção** e para os
+arquivos preexistentes (não some as linhas de arquivos novos). Arquivos novos,
+estejam staged ou untracked, contam como **um arquivo**, com suas linhas fora
+do teto; não conte o mesmo caminho duas vezes. Movimentos de código antigo
+continuam contando como alterações. A contagem autoritativa é a do hook
+`orcamento-de-mudanca` — use o comando acima apenas como inspeção.
 
 ## O orçamento na barra de status
 
