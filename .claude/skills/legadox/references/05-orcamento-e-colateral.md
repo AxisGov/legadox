@@ -37,6 +37,10 @@ Não contam:
 
 Como medir, antes de dar a task por concluída:
 
+Substitua `<arquivos de producao>` por pathspecs reais do repositório. O texto
+entre sinais de menor/maior é apenas um marcador; não o execute literalmente,
+pois o shell o interpreta como redirecionamento.
+
 ```bash
 # Inclui alterações staged e unstaged de arquivos já rastreados.
 git diff HEAD --numstat -- <arquivos de producao>
