@@ -65,7 +65,7 @@ Nunca edite os hooks para se livrar de um bloqueio. Se um hook está errado, iss
 
 Duas partes do método rodam em agente próprio, com escrita restrita:
 
-- **`cartografo`** — gera o `PERFIL.md` e prova que o código está vivo. Escreve só em `docs/legado/`.
+- **`legadox-cartografo`** — gera o `PERFIL.md` e prova que o código está vivo. Escreve só em `docs/legado/`.
 - **`avaliador-de-raio`** — calcula o raio de impacto. Escreve só em `docs/legado/raio/`.
 
 O `avaliador-de-raio` é separado de propósito: quem implementa tem interesse em raio baixo, porque raio alto dá mais trabalho. Não calcule o raio você mesmo quando o agente estiver disponível.

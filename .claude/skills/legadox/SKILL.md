@@ -143,7 +143,7 @@ Todo hook nasce em modo `aviso` (registra, não bloqueia) e só vira `bloqueio` 
 
 Dois agentes rodam em contexto próprio, com escrita restrita:
 
-- **`cartografo`** — Camadas 1 e 10. Monta o `PERFIL.md` e prova que o código está vivo. Escreve só em `docs/legado/`. O que não for verificável vira `NÃO DETERMINADO` e entra em `LACUNAS.md`.
+- **`legadox-cartografo`** — Camadas 1 e 10. Monta o `PERFIL.md` e prova que o código está vivo. Escreve só em `docs/legado/`. O que não for verificável vira `NÃO DETERMINADO` e entra em `LACUNAS.md`.
 - **`avaliador-de-raio`** — Camada 2. Coleta os oito sinais e classifica a faixa. Escreve só em `docs/legado/raio/`. Existe separado porque **coleta os sinais sem ter interesse no resultado**: o implementador tem interesse em raio baixo, porque raio alto lhe dá mais trabalho.
 
 Cada hook grava no rastro (`docs/eventos/<trabalho_id>.jsonl`), inclusive quando permite. É o rastro que mostra qual hook barra demais e está calibrado errado.

@@ -365,7 +365,7 @@ Dois subagentes rodam em contexto próprio — e são os únicos do ecossistema 
 
 | Agente | Camada | Papel |
 |---|---|---|
-| `cartografo` | 1 e 10 | monta o `PERFIL.md`, que é o gatilho do modo legado, e prova que o código alvo está vivo; o que não for verificável vira `NÃO DETERMINADO` |
+| `legadox-cartografo` | 1 e 10 | monta o `PERFIL.md`, que é o gatilho do modo legado, e prova que o código alvo está vivo; o que não for verificável vira `NÃO DETERMINADO` |
 | `avaliador-de-raio` | 2 | coleta os oito sinais por evidência e classifica a faixa; sinal não coletável conta como pior caso, e isso fica escrito |
 
 ## O rastro de eventos
@@ -403,7 +403,7 @@ skill/                        fonte única da skill
   assets/
     TEMPLATE-*.md             8 templates preenchíveis
 commands/                     os 6 comandos, válidos nos dois harnesses
-agents/                       os 2 subagentes: cartografo e avaliador-de-raio
+agents/                       os 2 subagentes: legadox-cartografo e avaliador-de-raio
 hooks/
   hooks.json                  o registro dos hooks no harness
   modos.padrao.json           o modo padrão de cada hook (aviso ou bloqueio)
