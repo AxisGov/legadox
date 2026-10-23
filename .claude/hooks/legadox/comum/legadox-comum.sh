@@ -130,7 +130,7 @@ legadox_arquivo_raio() {
   [ -f "$f" ] && printf '%s\n' "$f"
 }
 
-# A faixa sai do arquivo do raio: linha "faixa: ALTO" ou "**Faixa:** ALTO".
+# A faixa sai do arquivo do raio: linha "faixa: ALTO", "**Faixa:** ALTO" ou "Raio de impacto | ALTO".
 # Nao infere, nao adivinha. Sem arquivo de raio, devolve vazio.
 #
 # Uma passada de awk em vez de grep|grep|head|tr|sed: a faixa e consultada por todos
@@ -146,7 +146,7 @@ legadox_faixa() {
     {
       linha = tolower($0)
       gsub(/é/, "e", linha)
-      if (match(linha, /(faixa|raio)[^a-z0-9]{0,12}(baixo|medio|alto)/)) {
+      if (match(linha, /(faixa|raio de impacto|raio)[[:space:]*|:=/-]*(baixo|medio|alto)/)) {
         s = substr(linha, RSTART, RLENGTH)
         if (match(s, /(baixo|medio|alto)/)) {
           print toupper(substr(s, RSTART, RLENGTH)); exit
