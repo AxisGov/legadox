@@ -130,7 +130,7 @@ legadox_arquivo_raio() {
   [ -f "$f" ] && printf '%s\n' "$f"
 }
 
-# A faixa sai do arquivo do raio: linha "faixa: ALTO" ou "**Faixa:** ALTO".
+# A faixa sai do arquivo do raio: linha "faixa: ALTO", "**Faixa:** ALTO" ou "Raio de impacto | ALTO".
 # Nao infere, nao adivinha. Sem arquivo de raio, devolve vazio.
 #
 # Uma passada de awk em vez de grep|grep|head|tr|sed: a faixa e consultada por todos
@@ -146,8 +146,11 @@ legadox_faixa() {
     {
       linha = tolower($0)
       gsub(/é/, "e", linha)
-      if (match(linha, /(faixa|raio)[^a-z0-9]{0,12}(baixo|medio|alto)/)) {
-        s = substr(linha, RSTART, RLENGTH)
+      if (match(linha, /(faixa|raio de impacto|raio)/)) {
+        # Separadores de Markdown podem incluir Unicode (por exemplo, travessao).
+        # Evita enumerar separadores e o / literal que e invalido no BSD awk.
+        # Procura o valor numa janela curta logo depois do rotulo reconhecido.
+        s = substr(linha, RSTART + RLENGTH, 32)
         if (match(s, /(baixo|medio|alto)/)) {
           print toupper(substr(s, RSTART, RLENGTH)); exit
         }
@@ -193,6 +196,30 @@ legadox_modo() {
 
 legadox_ts() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 
+# Escapa uma string para JSON sem depender de jq. Bash faz aqui somente os escapes
+# exigidos pelos campos que os hooks produzem; assim a regra "sempre grava no
+# rastro" continua verdadeira mesmo na instalacao minima.
+legadox_json_escape() {
+  local s="$1"
+  s="${s//\\/\\\\}"
+  s="${s//\"/\\\"}"
+  s="${s//$'\n'/\\n}"
+  s="${s//$'\r'/\\r}"
+  s="${s//$'\t'/\\t}"
+  printf '%s' "$s"
+}
+
+legadox_lista_json() {
+  local arquivos="$1" linha primeiro=1
+  printf '['
+  while IFS= read -r linha; do
+    [ -z "$linha" ] && continue
+    [ "$primeiro" -eq 0 ] && printf ','
+    printf '"%s"' "$(legadox_json_escape "$linha")"
+    primeiro=0
+  done <<<"$arquivos"
+  printf ']'
+}
 # Uma linha JSON por evento, append-only, em docs/eventos/<trabalho_id>.jsonl.
 # Rotaciona acima de 5 MB, como manda o contrato.
 # Falha aqui nunca derruba o hook: o rastro e observabilidade, nao controle.
@@ -228,8 +255,18 @@ legadox_rastro() {
         --arg fx "$faixa" --arg tk "$task" --argjson arqs "$lista" \
         '{ts:$ts, expx_eventos:1, trabalho_id:$id, ferramenta:"legadox", origem:"hook",
           evento:$ev, fase:null, task:(if $tk=="" then null else $tk end), agente:"principal",
-          hook:$hk, faixa:(if $fx=="null" then null else $fx end),
-          resultado:$res, detalhe:$det, arquivos:$arqs}' >>"$arq" 2>/dev/null || true
+          resultado:$res, detalhe:$det, arquivos:$arqs,
+          hook:$hk, faixa:(if $fx=="null" then null else $fx end)}' >>"$arq" 2>/dev/null || true
+    else
+      local task_json="null" faixa_json="null"
+      [ -n "$task" ] && task_json="\"$(legadox_json_escape "$task")\""
+      [ "$faixa" != "null" ] && faixa_json="\"$(legadox_json_escape "$faixa")\""
+      lista="$(legadox_lista_json "$arquivos")"
+      printf '{"ts":"%s","expx_eventos":1,"trabalho_id":"%s","ferramenta":"legadox","origem":"hook","evento":"%s","fase":null,"task":%s,"agente":"principal","resultado":"%s","detalhe":"%s","arquivos":%s,"hook":"%s","faixa":%s}\n' \
+        "$(legadox_json_escape "$(legadox_ts)")" "$(legadox_json_escape "$id")" \
+        "$(legadox_json_escape "$evento")" "$task_json" "$(legadox_json_escape "$resultado")" \
+        "$(legadox_json_escape "$detalhe")" "$lista" "$(legadox_json_escape "$hook")" \
+        "$faixa_json" >>"$arq" 2>/dev/null || true
     fi
   } 2>/dev/null || true
   return 0
@@ -244,7 +281,8 @@ legadox_decidir() {
   local hook="$1" padrao="$2" mensagem="$3" arquivos="${4:-}"
   local modo; modo="$(legadox_modo "$hook" "$padrao")"
 
-  [ "$modo" = "desligado" ] && return 0
+  # A decisao encerra o hook; retornar deixaria o chamador registrar falso sucesso.
+  [ "$modo" = "desligado" ] && exit 0
 
   # O rastro leva so a primeira linha da mensagem. A mensagem inteira e instrucao
   # para o modelo, nao dado para o painel — gravar os paragrafos todos incharia o

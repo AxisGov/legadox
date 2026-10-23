@@ -85,10 +85,31 @@ conta_para_orcamento() {
 # excluidos no proprio git, e nao depois no shell: em repo grande a diferenca e
 # a que decide se o dev sente ou nao o hook.
 ARQS=0; LINS=0; LISTA=""
+lista_contem() {
+  printf '%s' "$1" | grep -qxF -- "$2"
+}
+
+# Arquivo novo consome uma unidade do teto de arquivos, mas zero linhas. Reune
+# tanto os adicionados ao indice quanto os ainda nao rastreados; a ordem em que o
+# usuario executou git add nao pode mudar o resultado do orcamento.
+NOVOS=""
+while IFS= read -r arq; do
+  [ -z "$arq" ] && continue
+  conta_para_orcamento "$arq" || continue
+  lista_contem "$NOVOS" "$arq" || NOVOS="$NOVOS$arq"$'\n'
+done < <(
+  { git -C "$RAIZ" diff --cached --name-only --diff-filter=A -- 2>/dev/null || true
+    git -C "$RAIZ" ls-files --others --exclude-standard -- 2>/dev/null || true
+  } | sort -u
+)
 while IFS=$'\t' read -r add del arq; do
   [ -z "${arq:-}" ] && continue
   conta_para_orcamento "$arq" || continue
   # Arquivo binario vem com "-" no lugar do numero.
+  if lista_contem "$NOVOS" "$arq"; then
+    add=0
+    del=0
+  fi
   case "$add" in ''|*[!0-9]*) add=0 ;; esac
   case "$del" in ''|*[!0-9]*) del=0 ;; esac
   ARQS=$((ARQS+1))
@@ -100,9 +121,19 @@ done < <(git -C "$RAIZ" diff HEAD --numstat -- \
            ':(exclude)*.lock' ':(exclude)*test*' ':(exclude)*Test*' \
            ':(exclude)*spec*' ':(exclude)*Spec*' 2>/dev/null || true)
 
+# Untracked nao aparece no numstat. Inclui os novos que ainda nao entraram na
+# lista, sempre sem somar suas linhas.
+while IFS= read -r arq; do
+  [ -z "$arq" ] && continue
+  if ! lista_contem "$LISTA" "$arq"; then
+    ARQS=$((ARQS+1))
+    LISTA="$LISTA$arq"$'\n'
+  fi
+done <<<"$NOVOS"
+
 # O arquivo que esta prestes a ser escrito ainda nao esta no diff. Some 1 se for novo.
 JA_NO_DIFF=0
-printf '%s' "$LISTA" | grep -qxF "$ALVO" && JA_NO_DIFF=1
+lista_contem "$LISTA" "$ALVO" && JA_NO_DIFF=1
 if [ "$JA_NO_DIFF" -eq 0 ] && conta_para_orcamento "$ALVO"; then
   ARQS=$((ARQS+1))
   LISTA="$LISTA$ALVO"$'\n'
