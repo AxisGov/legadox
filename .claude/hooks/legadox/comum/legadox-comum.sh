@@ -77,9 +77,9 @@ legadox_extrair_caminho() {
   # Entre a chave e o valor pode haver espaco e quebra de linha (JSON identado).
   # Assumir `":"` colado faz o parser devolver lixo em vez de vazio — e lixo aqui
   # e pior que falha, porque o hook segue adiante com um caminho invalido.
-  resto="${resto#"${resto%%[!  ]*}"}"     # espacos antes dos dois-pontos
+  resto="${resto#"${resto%%[![:space:]]*}"}"     # espaco, tab, CR ou LF antes dos dois-pontos
   case "$resto" in :*) resto="${resto#:}" ;; *) f="" ;; esac
-  resto="${resto#"${resto%%[!  ]*}"}"     # espacos depois dos dois-pontos
+  resto="${resto#"${resto%%[![:space:]]*}"}"     # espaco, tab, CR ou LF depois dos dois-pontos
   case "$resto" in
     \"*) f="${resto#\"}"; f="${f%%\"*}" ;;
     *)   f="" ;;
