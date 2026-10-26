@@ -134,7 +134,7 @@ Para gravar `null`, passe string vazia no `--arg` correspondente. Para voltar os
 
 A barra **nunca** pode ser motivo de interrupção de trabalho. Em ordem de preferência:
 
-- **`.expx/` não existe** — não crie. Siga sem gravar, sem erro e sem aviso. `.expx/` é criado por quem tem trabalho ali (o lock do trabalho, os modos dos hooks); um diretório criado só para a barra seria estado órfão.
+- **`.expx/` não existe** — não crie. Siga sem gravar, sem erro e sem aviso. `.expx/` é criado por quem tem trabalho ali (os modos dos hooks, o `estado.json` das skills de origem); um diretório criado só para a barra seria estado órfão.
 - **A gravação falhou** — por permissão, disco cheio, `jq` ausente, JSON de terceiro corrompido. Registre no rastro (`docs/eventos/<trabalho_id>.jsonl`, `resultado: "aviso"`) e siga.
 - **O arquivo existe mas não é JSON válido** — não tente consertar; não é seu. Registre no rastro e siga.
 

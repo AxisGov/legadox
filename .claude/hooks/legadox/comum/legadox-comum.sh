@@ -233,9 +233,11 @@ entao nenhum trabalho corrente pode ser determinado. Corrija esse arquivo." ;;
 }
 
 # A task corrente: a unica `status: em_andamento` entre os itens da chave de topo
-# `tasks:` dos `sprint-*/tasks.md` do trabalho corrente (kinds `tasks` e `plano`).
-# So frontmatter, so o nivel do item: `sprint.status`, `fases[].status` e prosa nao
-# contam. Imprime "ok <id>", "nenhuma" ou "varias".
+# `tasks:` dos `sprint-*/tasks.md` do trabalho corrente. So valem os arquivos de
+# `kind: tasks` ou `kind: plano` (o condensado); o kind pode vir depois da lista,
+# entao a contagem de cada arquivo so entra quando ele termina. So frontmatter, so
+# o nivel do item: `sprint.status`, `fases[].status` e prosa nao contam. Imprime
+# "ok <id>", "nenhuma" ou "varias".
 legadox_resolver_task() {
   [ -n "$TRABALHO_PASTA" ] || { printf 'nenhuma\n'; return 0; }
   local f arqs=""
@@ -255,13 +257,25 @@ legadox_resolver_task() {
       return v
     }
     function fecha_item() {
-      if (em_item && st == "em_andamento" && id != "") { n++; achado = id }
+      if (em_item && st == "em_andamento" && id != "") { fn++; fachado = id }
       em_item = 0; id = ""; st = ""
     }
-    FNR == 1 { fecha_item(); fm = ($0 ~ /^---[[:space:]]*$/) ? 1 : 0; topo = ""; ind = -1; next }
+    function fecha_arquivo() {
+      fecha_item()
+      if (aberto && (kind == "tasks" || kind == "plano") && fn) { n += fn; achado = fachado }
+      aberto = 0; fn = 0; fachado = ""; kind = ""
+    }
+    FNR == 1 {
+      fecha_arquivo(); aberto = 1
+      fm = ($0 ~ /^---[[:space:]]*$/) ? 1 : 0; topo = ""; ind = -1; next
+    }
     fm != 1 { next }
-    /^---[[:space:]]*$/ { fecha_item(); fm = 2; nextfile }
-    /^[^[:space:]#-][^:]*:/ { fecha_item(); topo = $0; sub(/:.*/, "", topo); ind = -1; next }
+    /^---[[:space:]]*$/ { fecha_arquivo(); fm = 2; nextfile }
+    /^[^[:space:]#-][^:]*:/ {
+      fecha_item(); topo = $0; sub(/:.*/, "", topo); ind = -1
+      if (topo == "kind") kind = limpo($0)
+      next
+    }
     topo != "tasks" { next }
     {
       linha = $0; gsub(/\r/, "", linha)
@@ -276,7 +290,7 @@ legadox_resolver_task() {
       else if (chave_linha ~ /^status:/) st = limpo(chave_linha)
     }
     END {
-      fecha_item()
+      fecha_arquivo()
       if (n == 0) print "nenhuma"
       else if (n == 1) print "ok " achado
       else print "varias"

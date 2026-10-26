@@ -19,6 +19,10 @@ done
 BASH_BIN="$(command -v bash)"
 
 ok=0; falhou=0
+troca() { # troca <expressao sed> <arquivo> — sem edicao no lugar, que difere entre GNU e BSD
+  sed "$1" "$2" >"$2.novo" && mv "$2.novo" "$2"
+}
+
 confere() { # confere <nome> <obtido> <esperado>
   if [ "$2" = "$3" ]; then ok=$((ok+1)); printf '  ok    %s\n' "$1"
   else falhou=$((falhou+1)); printf '  FALHA %s (obtido: [%s], esperado: [%s])\n' "$1" "$2" "$3"; fi
@@ -197,13 +201,17 @@ for arvore in .claude .opencode; do
     confere "uma task em andamento; sprint e fase nao contam" "$(task "$p")" T-01.02
     printf -- '---\nkind: tasks\ntasks:\n  - id: T-03.01\n    status: concluida\n    revisao:\n      status: em_andamento\n---\n' >"$d/sprint-03/tasks.md"
     confere "status aninhado dentro da task nao conta" "$(task "$p")" T-01.02
+    printf -- '---\ntasks:\n  - id: T-03.01\n    status: em_andamento\nkind: fases\n---\n' >"$d/sprint-03/tasks.md"
+    confere "kind que nao e tasks nem plano nao conta, mesmo depois da lista" "$(task "$p")" T-01.02
+    printf -- '---\ntasks:\n  - id: T-03.01\n    status: em_andamento\n---\n' >"$d/sprint-03/tasks.md"
+    confere "tasks.md sem kind nao conta" "$(task "$p")" T-01.02
     rm -f "$d/sprint-03/tasks.md"
-    sed -i 's/status: pendente/status: em_andamento/' "$d/sprint-02/tasks.md"
+    troca 's/status: pendente/status: em_andamento/' "$d/sprint-02/tasks.md"
     confere "duas em andamento: indeterminada" "$(task "$p")" ""
     confere "duas em andamento: motivo varias" "$(kmot "$p")" varias
-    sed -i 's/status: em_andamento$/status: concluida/' "$d/sprint-01/tasks.md"
+    troca 's/status: em_andamento$/status: concluida/' "$d/sprint-01/tasks.md"
     confere "kind plano condensado" "$(task "$p")" T-02.01
-    sed -i 's/^    status: em_andamento$/    status: concluida/' "$d/sprint-02/tasks.md"
+    troca 's/^    status: em_andamento$/    status: concluida/' "$d/sprint-02/tasks.md"
     confere "nenhuma em andamento: motivo nenhuma" "$(kmot "$p")" nenhuma
 
     # --- a task vai para o rastro, no arquivo do trabalho
