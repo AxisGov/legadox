@@ -28,7 +28,7 @@ Mostre, em bloco curto:
 
 ## Passo 3 — O trabalho atual
 
-Se `$ARGUMENTS` identificar um trabalho, ou se houver trabalho em andamento em `docs/<slug>/` (sprintx) ou `docs/manutencao/<OC-ID>-<slug>/` (runx), mostre o que falta:
+Se `$ARGUMENTS` identificar um trabalho, ou se houver trabalho em andamento em `docs/sprintx/features/<slug>/` ou `docs/<slug>/` (sprintx) ou em `docs/manutencao/<OC-ID>-<slug>/` (runx), mostre o que falta. Sem `$ARGUMENTS`, o trabalho atual segue a mesma regra dos hooks (DL-56): exatamente uma pasta aberta. Com várias, diga isso e peça o trabalho em vez de escolher. Com nenhuma, siga a regra do fim deste passo. O `<trabalho_id>` abaixo é o nome da pasta:
 
 | Verificação | Como detectar |
 |---|---|

@@ -34,8 +34,8 @@ RAIO="$(legadox_arquivo_raio)"
 
 ID="$(legadox_trabalho_id)"
 if [ -z "$ID" ]; then
-  ALVO_MSG="Nao ha .expx/trabalho-atual.json, entao nao da para saber qual trabalho este plano
-atende nem procurar o arquivo de raio correspondente."
+  ALVO_MSG="$(legadox_trabalho_indeterminado_msg)
+Sem trabalho corrente, nao da para saber qual raio este plano precisa."
 else
   ALVO_MSG="O trabalho corrente e \"$ID\", mas docs/legado/raio/$ID.md nao existe."
 fi

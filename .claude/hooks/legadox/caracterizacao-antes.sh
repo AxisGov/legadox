@@ -38,29 +38,28 @@ esac
 # Convencao: o caminho do arquivo aparece numa linha que fala de caracterizacao.
 esta_caracterizado() {
   local alvo="$1" base="${1##*/}"
-  local fontes=""
+  # Lista em array, nunca em string: a raiz do repositorio ou o nome de um
+  # arquivo do plano com espaco se partiriam ao expandir sem aspas.
+  local fontes=()
   local raio; raio="$(legadox_arquivo_raio)"
-  [ -n "$raio" ] && fontes="$raio"
+  [ -n "$raio" ] && fontes+=("$raio")
 
-  local id; id="$(legadox_trabalho_id)"
-  if [ -n "$id" ]; then
-    # Planos da sprintx e da runx, onde a task de caracterizacao e declarada.
-    # O glob do shell cobre a profundidade util sem subir um find por escrita.
-    local p g
-    for p in "$RAIZ/docs/$id" "$RAIZ/docs/manutencao/$id"; do
-      [ -d "$p" ] || continue
-      for g in "$p"/*.md "$p"/*/*.md "$p"/*/*/*.md; do
-        [ -f "$g" ] && fontes="$fontes $g"
-      done
+  if [ -n "$TRABALHO_PASTA" ]; then
+    # O plano do trabalho corrente (sprintx ou runx), onde a task de caracterizacao
+    # e declarada. O glob do shell cobre a profundidade util sem subir um find.
+    local p="$RAIZ/$TRABALHO_PASTA" g
+    for g in "$p"/*.md "$p"/*/*.md "$p"/*/*/*.md; do
+      [ -f "$g" ] && fontes+=("$g")
     done
   fi
 
-  [ -z "${fontes// /}" ] && return 1
+  # Antes de expandir: array vazio com `set -u` e erro no bash 3.2 (macOS).
+  [ "${#fontes[@]}" -eq 0 ] && return 1
 
   # Um arquivo conta como caracterizado quando aparece perto da palavra
   # caracteriza(cao) — na mesma linha ou nas 3 seguintes. Uma passada so:
   # a versao anterior varria os mesmos arquivos duas vezes, por caminho e por nome.
-  grep -ihA3 -E 'caracteriza' $fontes 2>/dev/null \
+  grep -ihA3 -E 'caracteriza' "${fontes[@]}" 2>/dev/null \
     | grep -qF -e "$alvo" -e "$base" && return 0
   return 1
 }
