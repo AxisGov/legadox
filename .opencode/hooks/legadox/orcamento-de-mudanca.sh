@@ -144,7 +144,8 @@ if [ "$ARQS" -le "$TETO_ARQ" ] && [ "$LINS" -le "$TETO_LIN" ]; then
   legadox_permitir
 fi
 
-TASK="$(legadox_task_atual)"; [ -z "$TASK" ] && TASK="(task nao declarada no lock)"
+TASK="$(legadox_task_atual)"
+[ -z "$TASK" ] && TASK="(task em andamento indeterminada: $(legadox_task_motivo))"
 GASTOS="$(printf '%s' "$LISTA" | grep -v '^$' | sed 's/^/  - /' | head -12)"
 
 MOTIVO=""

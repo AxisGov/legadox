@@ -62,12 +62,16 @@ ZONA="$(zona_do_arquivo "$ALVO" 2>/dev/null || true)"
 RAIO="$(legadox_arquivo_raio)"
 
 if [ -z "$RAIO" ]; then
+  SEM_TRABALHO="$(legadox_trabalho_indeterminado_msg)"
+  [ -n "$SEM_TRABALHO" ] && SEM_TRABALHO="
+$SEM_TRABALHO
+"
   legadox_decidir "$HOOK" "bloqueio" \
 "O arquivo $ALVO esta na zona de risco \"$ZONA\", declarada em docs/legado/PERFIL.md.
 
 Nao ha arquivo de raio para o trabalho corrente, entao as perguntas obrigatorias da
 zona (Camada 11) nao foram respondidas.
-
+$SEM_TRABALHO
 O caminho: rode /legadox-raio para calcular o raio deste trabalho e responder as
 perguntas da zona. So depois altere o arquivo.
 

@@ -101,26 +101,198 @@ legadox_arquivo_alvo() { printf '%s\n' "$ARQUIVO_ALVO"; }
 
 # ------------------------------------------------------------ trabalho e raio
 
-# O trabalho corrente vem do lock que sprintx/runx escrevem. Sem lock, sem trabalho:
-# os hooks de metodo saem permitindo, porque nao ha faixa contra a qual julgar.
-legadox_trabalho_id() {
-  local lock="$EXPX/trabalho-atual.json"
-  [ -f "$lock" ] || return 0
-  if [ "$TEM_JQ" -eq 1 ]; then
-    jq -r '.trabalho_id // empty' "$lock" 2>/dev/null || true
-  else
-    sed -n 's/.*"trabalho_id"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$lock" 2>/dev/null | head -1
-  fi
+# O trabalho corrente sai dos artefatos que as skills de origem ja gravam (DL-56),
+# nunca do `.expx/estado.json`, que e so exibicao. A pasta do trabalho e reconhecida
+# pelo artefato que nasce primeiro — `00-PLANEJAMENTO.md` na F1 da sprintx,
+# `00-OCORRENCIA.md` no E1 da runx —, porque o raio age antes do ORQUESTRADOR
+# existir (F4 / E2). O ORQUESTRADOR, quando ha, so decide se o trabalho acabou.
+#
+#   docs/sprintx/features/<slug>/   sprintx
+#   docs/<slug>/                    sprintx, layout antigo
+#   docs/manutencao/<OC-ID>-<slug>/ runx
+#
+# Trabalho existe SOMENTE com exatamente uma pasta aberta, e o id e o nome da pasta
+# (o nome do raio nas duas integracoes). Nenhuma, varias, ou qualquer artefato
+# invalido => indeterminado: os hooks de metodo saem permitindo (falha aberta), e o
+# motivo fica em TRABALHO_MOTIVO (nenhum | varios | invalido) para as mensagens.
+# Nunca por mtime, nunca por branch, nunca por estado.json.
+TRABALHO_ID=""
+TRABALHO_PASTA=""
+TRABALHO_MOTIVO=""
+TRABALHO_INVALIDO=""
+
+# Uma passada de awk sobre todos os artefatos candidatos, so o frontmatter de topo.
+# Imprime "ok <pasta>", "nenhum", "varios" ou "invalido <arquivo>".
+legadox_resolver_trabalho() {
+  local r
+  r="$(legadox_candidatos_trabalho | legadox_classificar_trabalho)" || true
+  case "$r" in
+    "ok "*)       TRABALHO_PASTA="${r#ok }"; TRABALHO_ID="${TRABALHO_PASTA##*/}"; TRABALHO_MOTIVO="" ;;
+    "invalido "*) TRABALHO_MOTIVO="invalido"; TRABALHO_INVALIDO="${r#invalido }" ;;
+    varios)       TRABALHO_MOTIVO="varios" ;;
+    *)            TRABALHO_MOTIVO="nenhum" ;;
+  esac
+}
+
+# Os artefatos candidatos que existem, um por linha, relativos a raiz. Arquivo vazio
+# sai marcado com "!": o awk nunca ve a primeira linha dele, e ele sumiria em vez de
+# invalidar a resolucao.
+legadox_candidatos_trabalho() {
+  ( cd "$RAIZ" 2>/dev/null || exit 0
+    local f
+    for f in docs/sprintx/features/*/00-PLANEJAMENTO.md docs/sprintx/features/*/ORQUESTRADOR.md \
+             docs/manutencao/*/00-OCORRENCIA.md docs/manutencao/*/ORQUESTRADOR.md \
+             docs/*/00-PLANEJAMENTO.md docs/*/ORQUESTRADOR.md; do
+      [ -f "$f" ] || continue
+      if [ -s "$f" ]; then printf '%s\n' "$f"; else printf '!%s\n' "$f"; fi
+    done )
+}
+
+legadox_classificar_trabalho() {
+  local lista vazio
+  lista="$(cat)"
+  [ -n "$lista" ] || { printf 'nenhum\n'; return 0; }
+  vazio="$(printf '%s\n' "$lista" | sed -n 's/^!//p' | head -1)"
+  [ -n "$vazio" ] && { printf 'invalido %s\n' "$vazio"; return 0; }
+  # Caminhos com espaco nao existem nos layouts acima (slug e OC-ID), mas a lista
+  # e passada ao awk linha a linha, sem depender de separacao por espaco.
+  local IFS=$'\n'
+  # shellcheck disable=SC2086
+  set -f; set -- $lista; set +f
+  ( cd "$RAIZ" 2>/dev/null && awk '
+    function limpo(v) {
+      sub(/^[^:]*:/, "", v); gsub(/\r/, "", v)
+      sub(/[[:space:]]+#.*$/, "", v)
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", v)
+      gsub(/^["'"'"']|["'"'"']$/, "", v)
+      return v
+    }
+    function nulo(v) { return v == "null" || v == "~" }
+    function invalido(f) { if (!(f in RUIM)) { RUIM[f] = 1; ORDEM_RUIM[++NRUIM] = f } }
+    FNR == 1 {
+      n = split(FILENAME, p, "/"); nome = p[n]
+      if (p[2] == "sprintx" && p[3] == "features") { pasta = "docs/sprintx/features/" p[4]; fer = "sprintx" }
+      else if (p[2] == "manutencao") { pasta = "docs/manutencao/" p[3]; fer = "runx" }
+      else { pasta = "docs/" p[2]; fer = "sprintx" }
+      if (!(pasta in FER)) { FER[pasta] = fer; PASTAS[++NP] = pasta }
+      ARQ[FILENAME] = pasta; NOME[FILENAME] = nome; ORDEM[++NA] = FILENAME
+      estado = ($0 ~ /^---[[:space:]]*$/) ? 1 : 0
+      if (!estado) invalido(FILENAME)
+      next
+    }
+    estado != 1 { next }
+    /^---[[:space:]]*$/ { estado = 2; FECHOU[FILENAME] = 1; nextfile }
+    /^(expx_tool|kind|trabalho_id|status|concluido_em):/ {
+      k = $0; sub(/:.*/, "", k)
+      if ((FILENAME SUBSEP k) in V) invalido(FILENAME)
+      V[FILENAME, k] = limpo($0)
+    }
+    END {
+      for (i = 1; i <= NA; i++) {
+        f = ORDEM[i]; pasta = ARQ[f]; fer = FER[pasta]; nome = NOME[f]
+        id_pasta = pasta; sub(/.*\//, "", id_pasta)
+        if (!(f in FECHOU)) { invalido(f); continue }
+        kind = (nome == "ORQUESTRADOR.md") ? "orquestrador" : (nome == "00-OCORRENCIA.md") ? "ocorrencia" : "planejamento"
+        if (V[f, "kind"] != kind || V[f, "expx_tool"] != fer) { invalido(f); continue }
+        id = V[f, "trabalho_id"]
+        if (id == "") { invalido(f); continue }
+        if (fer == "sprintx" && id != id_pasta) { invalido(f); continue }
+        if (fer == "runx" && id != id_pasta && substr(id_pasta, 1, length(id) + 1) != id "-") { invalido(f); continue }
+        if (kind != "orquestrador") continue
+        st = V[f, "status"]
+        ce = V[f, "concluido_em"]   # ausente chega vazio: invalido nos dois ramos
+        if (st == "concluido") {
+          if (ce == "" || nulo(ce)) { invalido(f); continue }
+          FECHADA[pasta] = 1
+        } else if (st == "nao_iniciado" || st == "em_andamento" || st == "bloqueado") {
+          if (!nulo(ce)) invalido(f)
+        } else invalido(f)
+      }
+      if (NRUIM) { print "invalido " ORDEM_RUIM[1]; exit }
+      abertas = 0
+      for (i = 1; i <= NP; i++) if (!(PASTAS[i] in FECHADA)) { abertas++; aberta = PASTAS[i] }
+      if (abertas == 0) print "nenhum"
+      else if (abertas == 1) print "ok " aberta
+      else print "varios"
+    }' "$@" 2>/dev/null )
+}
+
+legadox_trabalho_id()     { [ -n "$TRABALHO_ID" ] && printf '%s\n' "$TRABALHO_ID"; return 0; }
+legadox_trabalho_motivo() { [ -n "$TRABALHO_MOTIVO" ] && printf '%s\n' "$TRABALHO_MOTIVO"; return 0; }
+
+# Explica a um humano por que nao ha trabalho corrente. Vazio quando ha.
+legadox_trabalho_indeterminado_msg() {
+  case "$TRABALHO_MOTIVO" in
+    nenhum)   printf '%s\n' "Nenhum trabalho aberto: nao ha 00-PLANEJAMENTO.md (sprintx) nem 00-OCORRENCIA.md
+(runx) de trabalho nao concluido em docs/." ;;
+    varios)   printf '%s\n' "Ha mais de um trabalho aberto em docs/, e o legadox nao escolhe entre eles." ;;
+    invalido) printf '%s\n' "O artefato $TRABALHO_INVALIDO tem frontmatter invalido ou contraditorio
+(kind, expx_tool, trabalho_id que nao casa com a pasta, status ou concluido_em),
+entao nenhum trabalho corrente pode ser determinado. Corrija esse arquivo." ;;
+  esac
+}
+
+# A task corrente: a unica `status: em_andamento` entre os itens da chave de topo
+# `tasks:` dos `sprint-*/tasks.md` do trabalho corrente (kinds `tasks` e `plano`).
+# So frontmatter, so o nivel do item: `sprint.status`, `fases[].status` e prosa nao
+# contam. Imprime "ok <id>", "nenhuma" ou "varias".
+legadox_resolver_task() {
+  [ -n "$TRABALHO_PASTA" ] || { printf 'nenhuma\n'; return 0; }
+  local f arqs=""
+  for f in "$RAIZ/$TRABALHO_PASTA"/sprint-*/tasks.md; do
+    [ -f "$f" ] && arqs="$arqs$f"$'\n'
+  done
+  [ -n "$arqs" ] || { printf 'nenhuma\n'; return 0; }
+  local IFS=$'\n'
+  # shellcheck disable=SC2086
+  set -f; set -- $arqs; set +f
+  ( awk '
+    function limpo(v) {
+      sub(/^[^:]*:/, "", v); gsub(/\r/, "", v)
+      sub(/[[:space:]]+#.*$/, "", v)
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", v)
+      gsub(/^["'"'"']|["'"'"']$/, "", v)
+      return v
+    }
+    function fecha_item() {
+      if (em_item && st == "em_andamento" && id != "") { n++; achado = id }
+      em_item = 0; id = ""; st = ""
+    }
+    FNR == 1 { fecha_item(); fm = ($0 ~ /^---[[:space:]]*$/) ? 1 : 0; topo = ""; ind = -1; next }
+    fm != 1 { next }
+    /^---[[:space:]]*$/ { fecha_item(); fm = 2; nextfile }
+    /^[^[:space:]#-][^:]*:/ { fecha_item(); topo = $0; sub(/:.*/, "", topo); ind = -1; next }
+    topo != "tasks" { next }
+    {
+      linha = $0; gsub(/\r/, "", linha)
+      match(linha, /^ */); recuo = RLENGTH
+      resto = substr(linha, recuo + 1)
+      if (substr(resto, 1, 2) == "- " && (ind < 0 || recuo == ind)) {
+        fecha_item(); ind = recuo; em_item = 1
+        chave_linha = substr(resto, 3); recuo_chave = recuo + 2
+      } else { chave_linha = resto; recuo_chave = recuo }
+      if (!em_item || recuo_chave != ind + 2) next
+      if (chave_linha ~ /^id:/) id = limpo(chave_linha)
+      else if (chave_linha ~ /^status:/) st = limpo(chave_linha)
+    }
+    END {
+      fecha_item()
+      if (n == 0) print "nenhuma"
+      else if (n == 1) print "ok " achado
+      else print "varias"
+    }' "$@" 2>/dev/null )
 }
 
 legadox_task_atual() {
-  local lock="$EXPX/trabalho-atual.json"
-  [ -f "$lock" ] || return 0
-  if [ "$TEM_JQ" -eq 1 ]; then
-    jq -r '.task // empty' "$lock" 2>/dev/null || true
-  else
-    sed -n 's/.*"task"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$lock" 2>/dev/null | head -1
-  fi
+  local r; r="$(legadox_resolver_task)"
+  case "$r" in "ok "*) printf '%s\n' "${r#ok }" ;; esac
+  return 0
+}
+
+legadox_task_motivo() {
+  local r; r="$(legadox_resolver_task)"
+  case "$r" in "ok "*) ;; *) printf '%s\n' "${r:-nenhuma}" ;; esac
+  return 0
 }
 
 legadox_arquivo_raio() {
@@ -158,8 +330,12 @@ legadox_faixa() {
     }' "$f" 2>/dev/null
 }
 
-# A faixa e imutavel durante a execucao de um hook. Resolvida uma vez, no shell
-# principal, para que as varias consultas de um mesmo hook nao repitam a leitura.
+# Trabalho e faixa sao imutaveis durante a execucao de um hook. Resolvidos uma vez,
+# no shell principal, para que as varias consultas de um mesmo hook nao repitam a
+# leitura. A varredura dos artefatos so acontece em modo legado: isto roda ao
+# carregar a lib, antes do legadox_saida_rapida de cada hook, e projeto sem
+# PERFIL.md nao pode pagar por ela.
+[ -f "$LEGADO/PERFIL.md" ] && legadox_resolver_trabalho
 FAIXA_CACHE="$(legadox_faixa)"
 legadox_faixa() { printf '%s\n' "$FAIXA_CACHE"; }
 

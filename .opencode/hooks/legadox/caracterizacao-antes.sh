@@ -42,16 +42,12 @@ esta_caracterizado() {
   local raio; raio="$(legadox_arquivo_raio)"
   [ -n "$raio" ] && fontes="$raio"
 
-  local id; id="$(legadox_trabalho_id)"
-  if [ -n "$id" ]; then
-    # Planos da sprintx e da runx, onde a task de caracterizacao e declarada.
-    # O glob do shell cobre a profundidade util sem subir um find por escrita.
-    local p g
-    for p in "$RAIZ/docs/$id" "$RAIZ/docs/manutencao/$id"; do
-      [ -d "$p" ] || continue
-      for g in "$p"/*.md "$p"/*/*.md "$p"/*/*/*.md; do
-        [ -f "$g" ] && fontes="$fontes $g"
-      done
+  if [ -n "$TRABALHO_PASTA" ]; then
+    # O plano do trabalho corrente (sprintx ou runx), onde a task de caracterizacao
+    # e declarada. O glob do shell cobre a profundidade util sem subir um find.
+    local p="$RAIZ/$TRABALHO_PASTA" g
+    for g in "$p"/*.md "$p"/*/*.md "$p"/*/*/*.md; do
+      [ -f "$g" ] && fontes="$fontes $g"
     done
   fi
 
