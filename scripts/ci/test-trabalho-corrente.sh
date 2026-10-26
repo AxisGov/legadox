@@ -164,6 +164,9 @@ for arvore in .claude .opencode; do
     confere "runx com trabalho_id OC-AAAA truncado: invalido" "$(tmot "$p")" invalido
     orquestrador "$p/docs/manutencao/OC-2026-0142-frete" runx OC-2026-0142 em_andamento null
     confere "runx com OC-ID completo segue valido" "$(tid "$p")" OC-2026-0142-frete
+    p="$(projeto id-cinco-digitos)"
+    ocorrencia "$p/docs/manutencao/OC-2026-12345-x" OC-2026-12345
+    confere "runx com NNNN de cinco digitos: invalido" "$(tmot "$p")" invalido
 
     p="$(projeto kind-errado)"
     mkdir -p "$p/docs/sprintx/features/a"
@@ -223,6 +226,9 @@ for arvore in .claude .opencode; do
     confere "kind plano condensado" "$(task "$p")" T-02.01
     troca 's/^    status: em_andamento$/    status: concluida/' "$d/sprint-02/tasks.md"
     confere "nenhuma em andamento: motivo nenhuma" "$(kmot "$p")" nenhuma
+    printf -- '---\nkind: tasks\ntasks:\n  - id: T-03.01\n    status: em_andamento\n' >"$d/sprint-03/tasks.md"
+    confere "tasks.md com frontmatter sem fechamento nao conta" "$(kmot "$p")" nenhuma
+    rm -f "$d/sprint-03/tasks.md"
 
     # --- a task vai para o rastro, no arquivo do trabalho
     p="$(projeto rastro)"
@@ -242,6 +248,16 @@ for arvore in .claude .opencode; do
     confere "caracterizacao no plano de docs/sprintx/features/<slug>/ e achada" "$(wc -c <"$T/err" | tr -d ' ')" 0
     hook "$arvore" "$P" "$p" caracterizacao-antes src/b.js >/dev/null
     confere "arquivo nao caracterizado ainda avisa" "$(grep -c 'Alteracao em arquivo sem teste de caracterizacao' "$T/err")" 1
+
+    # --- espaco no caminho do repositorio e no nome do arquivo do plano
+    p="$(projeto "com espaco")"
+    d="$p/docs/sprintx/features/a"; planejamento "$d" a; mkdir -p "$d/sprint-01"
+    printf -- '---\nkind: tasks\n---\n\nT-01.01 caracterizacao de src/a.js antes de alterar\n' >"$d/sprint-01/notas da sprint.md"
+    printf '# Raio\n\nfaixa: MEDIO\n' >"$p/docs/legado/raio/a.md"
+    mkdir -p "$p/src"; : >"$p/src/a.js"
+    confere "espaco no caminho: id resolvido" "$(tid "$p")" a
+    hook "$arvore" "$P" "$p" caracterizacao-antes src/a.js >/dev/null
+    confere "espaco no caminho e no nome: caracterizacao achada" "$(wc -c <"$T/err" | tr -d ' ')" 0
   done
 done
 

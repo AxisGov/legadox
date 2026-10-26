@@ -200,7 +200,7 @@ legadox_classificar_trabalho() {
         # O OC-ID tem forma fixa, OC-<AAAA>-<NNNN> (runx, 01-investigacao.md): sem
         # ela, um id truncado como "OC" casaria com qualquer pasta "OC-..." como
         # prefixo. Sem intervalo {n} na regex: o mawk antigo nao o entende.
-        if (fer == "runx" && id !~ /^OC-[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9]*$/) { invalido(f); continue }
+        if (fer == "runx" && id !~ /^OC-[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]$/) { invalido(f); continue }
         if (fer == "runx" && id != id_pasta && substr(id_pasta, 1, length(id) + 1) != id "-") { invalido(f); continue }
         if (kind != "orquestrador") continue
         st = V[f, "status"]
@@ -266,15 +266,16 @@ legadox_resolver_task() {
     }
     function fecha_arquivo() {
       fecha_item()
-      if (aberto && (kind == "tasks" || kind == "plano") && fn) { n += fn; achado = fachado }
-      aberto = 0; fn = 0; fachado = ""; kind = ""
+      # Frontmatter sem o `---` de fechamento nao e frontmatter: nada dele conta.
+      if (aberto && fechou && (kind == "tasks" || kind == "plano") && fn) { n += fn; achado = fachado }
+      aberto = 0; fechou = 0; fn = 0; fachado = ""; kind = ""
     }
     FNR == 1 {
       fecha_arquivo(); aberto = 1
       fm = ($0 ~ /^---[[:space:]]*$/) ? 1 : 0; topo = ""; ind = -1; next
     }
     fm != 1 { next }
-    /^---[[:space:]]*$/ { fecha_arquivo(); fm = 2; nextfile }
+    /^---[[:space:]]*$/ { fechou = 1; fecha_arquivo(); fm = 2; nextfile }
     /^[^[:space:]#-][^:]*:/ {
       fecha_item(); topo = $0; sub(/:.*/, "", topo); ind = -1
       if (topo == "kind") kind = limpo($0)
