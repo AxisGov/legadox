@@ -154,6 +154,16 @@ for arvore in .claude .opencode; do
     p="$(projeto id-prefixo)"
     ocorrencia "$p/docs/manutencao/OC-2026-00031-x" OC-2026-0003
     confere "runx com OC-ID so prefixo de texto: invalido" "$(tmot "$p")" invalido
+    # OC-ID truncado (o `split("-")[0]` da runx da "OC") nao pode casar com a pasta
+    # como prefixo e, num ORQUESTRADOR concluido, esconder a ocorrencia aberta.
+    p="$(projeto id-truncado)"
+    ocorrencia "$p/docs/manutencao/OC-2026-0142-frete" OC-2026-0142
+    orquestrador "$p/docs/manutencao/OC-2026-0142-frete" runx OC concluido 2026-09-01
+    confere "runx com trabalho_id OC truncado: invalido" "$(tmot "$p")" invalido
+    orquestrador "$p/docs/manutencao/OC-2026-0142-frete" runx OC-2026 concluido 2026-09-01
+    confere "runx com trabalho_id OC-AAAA truncado: invalido" "$(tmot "$p")" invalido
+    orquestrador "$p/docs/manutencao/OC-2026-0142-frete" runx OC-2026-0142 em_andamento null
+    confere "runx com OC-ID completo segue valido" "$(tid "$p")" OC-2026-0142-frete
 
     p="$(projeto kind-errado)"
     mkdir -p "$p/docs/sprintx/features/a"
@@ -239,14 +249,19 @@ done
 # Mesmo cenario, uma arvore de cada vez: mesmo codigo de saida, mesma mensagem e a
 # mesma linha de rastro (sem o carimbo de hora).
 echo "== paridade =="
-cenario() { # cenario <projeto> — invalido + aberto + raio ALTO sem aprovacao + task
+cenario() { # cenario <projeto> — um trabalho aberto + raio ALTO sem aprovacao + task
   planejamento "$1/docs/sprintx/features/a" a
   mkdir -p "$1/docs/sprintx/features/a/sprint-01"
   printf -- '---\nkind: tasks\ntasks:\n  - id: T-01.01\n    status: em_andamento\n---\n' >"$1/docs/sprintx/features/a/sprint-01/tasks.md"
   raio_alto "$1" a
 }
-for caso in "aprovacao-em-raio-alto src/a.js" "raio-antes-do-plano docs/sprintx/features/a/sprint-01/tasks.md" "zona-de-risco src/a.js"; do
-  set -- $caso
+# Alem de iguais entre si, as duas arvores tem de dar o resultado CERTO: paridade
+# sozinha passaria se as duas liberassem por engano.
+for caso in "aprovacao-em-raio-alto src/a.js 2 Raio ALTO sem aprovacao" \
+            "raio-antes-do-plano docs/sprintx/features/a/sprint-01/tasks.md 0 Plano sendo gerado sem raio" \
+            "zona-de-risco src/a.js 2 esta na zona de risco"; do
+  set -f; set -- $caso; set +f
+  esperado="$3"; shift 3; trecho="$*"; set -- $caso
   for arvore in .claude .opencode; do
     p="$(projeto "par${arvore}")"; cenario "$p"
     [ "$1" = raio-antes-do-plano ] && rm -f "$p/docs/legado/raio/a.md"
@@ -257,6 +272,8 @@ for caso in "aprovacao-em-raio-alto src/a.js" "raio-antes-do-plano docs/sprintx/
     cp "$T/err" "$T/par$arvore.err"
     sed 's/"ts":"[^"]*"//' "$p/docs/eventos/a.jsonl" >"$T/par$arvore.rastro" 2>/dev/null || : >"$T/par$arvore.rastro"
   done
+  confere "$1: codigo de saida esperado" "$(cat "$T/par.claude.saida")" "$esperado"
+  confere "$1: mensagem esperada" "$(grep -c "$trecho" "$T/par.claude.err")" 1
   confere "$1: mesmo codigo de saida" "$(cat "$T/par.opencode.saida")" "$(cat "$T/par.claude.saida")"
   confere "$1: mesma mensagem" "$(cmp -s "$T/par.claude.err" "$T/par.opencode.err" && echo igual)" igual
   confere "$1: mesmo rastro" "$(cmp -s "$T/par.claude.rastro" "$T/par.opencode.rastro" && echo igual)" igual

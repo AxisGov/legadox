@@ -197,6 +197,10 @@ legadox_classificar_trabalho() {
         id = V[f, "trabalho_id"]
         if (id == "") { invalido(f); continue }
         if (fer == "sprintx" && id != id_pasta) { invalido(f); continue }
+        # O OC-ID tem forma fixa, OC-<AAAA>-<NNNN> (runx, 01-investigacao.md): sem
+        # ela, um id truncado como "OC" casaria com qualquer pasta "OC-..." como
+        # prefixo. Sem intervalo {n} na regex: o mawk antigo nao o entende.
+        if (fer == "runx" && id !~ /^OC-[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9]*$/) { invalido(f); continue }
         if (fer == "runx" && id != id_pasta && substr(id_pasta, 1, length(id) + 1) != id "-") { invalido(f); continue }
         if (kind != "orquestrador") continue
         st = V[f, "status"]
