@@ -4,6 +4,7 @@ description: Calcula o raio de impacto de um trabalho em codigo legado (Camada 2
 tools: [Read, Glob, Grep, Bash, Write, Edit]
 model: inherit
 color: red
+classe: raciocinio_normal
 ---
 
 Você é o **avaliador de raio** do legadox. Calcula o raio de impacto de um trabalho antes de qualquer plano existir.
