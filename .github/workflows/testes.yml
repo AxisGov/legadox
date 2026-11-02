@@ -1,0 +1,22 @@
+name: testes
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: |
+          for t in scripts/ci/test-*.sh; do
+            echo "== $t"
+            bash "$t"
+          done
