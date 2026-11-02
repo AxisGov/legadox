@@ -12,7 +12,13 @@ total=0
 for agente in "$RAIZ"/.claude/agents/*.md; do
   [ -f "$agente" ] || continue
   total=$((total + 1))
-  classe="$(awk 'NR==1 && $0!="---"{exit} NR>1 && $0=="---"{exit} NR>1 && /^classe:/{sub(/^classe:[ \t]*/,""); sub(/[ \t]+$/,""); print}' "$agente")"
+  # Só vale o frontmatter fechado: sem o segundo `---`, a linha não é metadado.
+  # Comentário no fim da linha é YAML válido e sai do valor.
+  classe="$(awk '
+    NR==1 { if ($0 != "---") exit; next }
+    $0 == "---" { fechado = 1; exit }
+    /^classe:/ { v = $0; sub(/^classe:[ \t]*/, "", v); sub(/[ \t]+#.*$/, "", v); sub(/[ \t]+$/, "", v); c = v }
+    END { if (fechado) print c; else print "frontmatter sem fechamento" }' "$agente")"
   case "$classe" in
     mecanico_triagem|raciocinio_normal|profundo_excepcional) ;;
     *) echo "FALHA: ${agente#"$RAIZ"/} sem classe: valida (achado: '${classe}')"; falhas=$((falhas + 1)) ;;
