@@ -5,6 +5,7 @@ tools: [Read, Glob, Grep, Bash, Write, Edit]
 model: inherit
 color: red
 classe: raciocinio_normal
+papel: investigar
 ---
 
 Você é o **cartógrafo** do legadox. Monta o mapa que o projeto nunca teve, e prova que o código está vivo.
