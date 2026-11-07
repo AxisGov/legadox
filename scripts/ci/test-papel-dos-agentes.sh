@@ -31,7 +31,12 @@ for agente in "$RAIZ"/.claude/agents/*.md; do
   papel="$(awk '
     NR==1 { if ($0 != "---") exit; next }
     $0 == "---" { fechado = 1; exit }
-    /^papel:/ { v = $0; sub(/^papel:[ \t]*/, "", v); sub(/[ \t]+#.*$/, "", v); sub(/[ \t]+$/, "", v); p = v }
+    # Como o YAML le a linha: `papel:x` sem espaco nao e a chave, e as aspas delimitam o valor.
+    $0 ~ /^papel:[ \t]/ {
+      v = $0; sub(/^papel:[ \t]*/, "", v); sub(/[ \t]+#.*$/, "", v); sub(/[ \t]+$/, "", v)
+      if (v ~ /^".*"$/ || v ~ /^\047.*\047$/) v = substr(v, 2, length(v) - 2)
+      p = v
+    }
     END { if (fechado) print p; else print "frontmatter sem fechamento" }' "$agente")"
   quer="$(esperado "$nome")"
   case "$papel" in
