@@ -35,9 +35,9 @@ for agente in "$RAIZ"/.claude/agents/*.md; do
     $0 ~ /^papel:[ \t]/ {
       v = $0; sub(/^papel:[ \t]*/, "", v); sub(/[ \t]+#.*$/, "", v); sub(/[ \t]+$/, "", v)
       if (v ~ /^".*"$/ || v ~ /^\047.*\047$/) v = substr(v, 2, length(v) - 2)
-      p = v
+      p = v; n++
     }
-    END { if (fechado) print p; else print "frontmatter sem fechamento" }' "$agente")"
+    END { if (!fechado) print "frontmatter sem fechamento"; else if (n > 1) print "papel repetido"; else print p }' "$agente")"
   quer="$(esperado "$nome")"
   case "$papel" in
     planejar|implementar|investigar|testar|revisar) ;;
