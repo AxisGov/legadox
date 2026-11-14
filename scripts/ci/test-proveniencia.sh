@@ -133,6 +133,7 @@ while IFS=$'\t' read -r arquivo ocorrencia quantidade finalidade justificativa e
   }
 
   decodificada="${ocorrencia//%2E/.}"
+  decodificada="${decodificada//%20/ }"
   normalizada="$(printf '%s' "$decodificada" | LC_ALL=C tr '[:upper:]' '[:lower:]')"
   [ "$decodificada" = "$normalizada" ] || {
     printf 'ocorrencia da allowlist deve estar normalizada em lowercase, linha %d\n' "$numero_linha" >&2
