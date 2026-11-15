@@ -1,28 +1,28 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/bittencourtthulio/legadox/main/.github/assets/banner-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/bittencourtthulio/legadox/main/.github/assets/banner-light.svg">
-  <img alt="legadox — a camada de seguranca do metodo Expx" src="https://raw.githubusercontent.com/bittencourtthulio/legadox/main/.github/assets/banner-light.svg" width="100%">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/AxisGov/legadox/main/.github/assets/banner-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/AxisGov/legadox/main/.github/assets/banner-light.svg">
+  <img alt="legadox — a camada de seguranca do metodo Expx" src="https://raw.githubusercontent.com/AxisGov/legadox/main/.github/assets/banner-light.svg" width="100%">
 </picture>
 
 <p>
-  <img alt="harness: Claude Code" src="https://raw.githubusercontent.com/bittencourtthulio/legadox/main/.github/assets/badge-claude.svg">
-  <img alt="harness: OpenCode" src="https://raw.githubusercontent.com/bittencourtthulio/legadox/main/.github/assets/badge-opencode.svg">
-  <img alt="11 camadas" src="https://raw.githubusercontent.com/bittencourtthulio/legadox/main/.github/assets/badge-camadas.svg">
-  <img alt="raio BAIXO MEDIO ALTO" src="https://raw.githubusercontent.com/bittencourtthulio/legadox/main/.github/assets/badge-raio.svg">
-  <img alt="docs pt-BR" src="https://raw.githubusercontent.com/bittencourtthulio/legadox/main/.github/assets/badge-lang.svg">
-  <img alt="licenca MIT" src="https://raw.githubusercontent.com/bittencourtthulio/legadox/main/.github/assets/badge-license.svg">
+  <img alt="harness: Claude Code" src="https://raw.githubusercontent.com/AxisGov/legadox/main/.github/assets/badge-claude.svg">
+  <img alt="harness: OpenCode" src="https://raw.githubusercontent.com/AxisGov/legadox/main/.github/assets/badge-opencode.svg">
+  <img alt="11 camadas" src="https://raw.githubusercontent.com/AxisGov/legadox/main/.github/assets/badge-camadas.svg">
+  <img alt="raio BAIXO MEDIO ALTO" src="https://raw.githubusercontent.com/AxisGov/legadox/main/.github/assets/badge-raio.svg">
+  <img alt="docs pt-BR" src="https://raw.githubusercontent.com/AxisGov/legadox/main/.github/assets/badge-lang.svg">
+  <img alt="licenca MIT" src="https://raw.githubusercontent.com/AxisGov/legadox/main/.github/assets/badge-license.svg">
 </p>
 
 <p>
-  <a href="https://bittencourtthulio.github.io/expxdev/#legadox"><strong>📘 Documentação do método</strong></a>
+  <a href="https://axisgov.github.io/expxdev/#legadox"><strong>📘 Documentação do método</strong></a>
   &nbsp;·&nbsp;
-  <a href="https://bittencourtthulio.github.io/expxdev/#legadox">Raio de impacto</a>
+  <a href="https://axisgov.github.io/expxdev/#legadox">Raio de impacto</a>
   &nbsp;·&nbsp;
-  <a href="https://bittencourtthulio.github.io/expxdev/#ecossistema">O ecossistema</a>
+  <a href="https://axisgov.github.io/expxdev/#ecossistema">O ecossistema</a>
   &nbsp;·&nbsp;
-  <a href="https://bittencourtthulio.github.io/expxdev/#schema">Contratos</a>
+  <a href="https://axisgov.github.io/expxdev/#schema">Contratos</a>
 </p>
 
 <strong>A camada de segurança do método Expx</strong> — o conjunto de regras que impede a IA<br>
@@ -39,23 +39,23 @@ Quando você pede a um agente de IA para mexer num sistema com dez anos de estra
 
 ## O ecossistema Expx
 
-O método Expx é um conjunto de skills que se compõem, instaladas e mantidas pelo CLI [`expxdev`](https://github.com/bittencourtthulio/expxdev).
+O método Expx é um conjunto de skills que se compõem, instaladas e mantidas pelo CLI [`expxdev`](https://github.com/AxisGov/expxdev).
 
 | Peça | Papel | Relação com o `legadox` |
 |---|---|---|
-| **[expxdev](https://github.com/bittencourtthulio/expxdev)** | o CLI: instala, atualiza e diagnostica o ecossistema, e sobe o painel de operação | é quem instala esta skill (`npx expxdev init`) |
-| **[sprintx](https://github.com/bittencourtthulio/sprintx)** | **Build** — feature nova, F1…F6 | o legadox endurece cada uma das seis fases |
-| **[runx](https://github.com/bittencourtthulio/runx)** | **Run** — ocorrência em produção, E1…E5 | o legadox endurece cada um dos cinco estágios |
+| **[expxdev](https://github.com/AxisGov/expxdev)** | o CLI: instala, atualiza e diagnostica o ecossistema, e sobe o painel de operação | é quem instala esta skill (`expx init`, com o CLI instalado pela [release do expxdev](https://github.com/AxisGov/expxdev#instalar-a-partir-da-release)) |
+| **[sprintx](https://github.com/AxisGov/sprintx)** | **Build** — feature nova, F1…F6 | o legadox endurece cada uma das seis fases |
+| **[runx](https://github.com/AxisGov/runx)** | **Run** — ocorrência em produção, E1…E5 | o legadox endurece cada um dos cinco estágios |
 | **legadox** *(este repositório)* | **camada** de segurança para código legado | — |
-| **[stackx](https://github.com/bittencourtthulio/stackx)** | **camada** de convenções do repositório | o cartucho de migração dele alimenta o cálculo de raio; em área legada, quem manda é o `PERFIL.md` |
-| **[mergex](https://github.com/bittencourtthulio/mergex)** | entrega: branch, commit por task, PR e pacote de QA | raio, caracterização, reversão e dívida alimentam o portão, a classificação de atenção e o PR |
-| **[memox](https://github.com/bittencourtthulio/MemoX)** | **camada** de memória do projeto | regressão e reprovação em QA que ele indexa entram no cálculo de raio |
-| **[prodx](https://github.com/bittencourtthulio/prodx)** | **camada** de produto: decide **se** há trabalho | as zonas de risco do `PERFIL.md` viram gatilho de avaliação completa na triagem dele |
-| **[buildx](https://github.com/bittencourtthulio/buildx)** | orquestra um projeto inteiro, da descrição ao sistema pronto | o legadox não participa dela: projeto novo não tem legado a preservar |
+| **[stackx](https://github.com/AxisGov/stackx)** | **camada** de convenções do repositório | o cartucho de migração dele alimenta o cálculo de raio; em área legada, quem manda é o `PERFIL.md` |
+| **[mergex](https://github.com/AxisGov/mergex)** | entrega: branch, commit por task, PR e pacote de QA | raio, caracterização, reversão e dívida alimentam o portão, a classificação de atenção e o PR |
+| **[memox](https://github.com/AxisGov/MemoX)** | **camada** de memória do projeto | regressão e reprovação em QA que ele indexa entram no cálculo de raio |
+| **[prodx](https://github.com/AxisGov/prodx)** | **camada** de produto: decide **se** há trabalho | as zonas de risco do `PERFIL.md` viram gatilho de avaliação completa na triagem dele |
+| **[buildx](https://github.com/AxisGov/buildx)** | orquestra um projeto inteiro, da descrição ao sistema pronto | o legadox não participa dela: projeto novo não tem legado a preservar |
 
 **Camadas** (`legadox`, `stackx`, `memox`, `prodx`) sozinhas não fazem nada — elas modificam o comportamento da `sprintx` e da `runx`. Sem `docs/legado/PERFIL.md`, nada muda: as irmãs se comportam como se comportariam sem esta skill.
 
-Detalhes do ecossistema inteiro no [README do expxdev](https://github.com/bittencourtthulio/expxdev).
+Detalhes do ecossistema inteiro no [README do expxdev](https://github.com/AxisGov/expxdev).
 
 ---
 
@@ -69,14 +69,14 @@ Nada nesse cenário exige um modelo ruim. Exige apenas um modelo prestativo trab
 
 ## Camada modificadora, não método novo
 
-`legadox` **não é um terceiro método**. A [`sprintx`](https://github.com/bittencourtthulio/sprintx) continua com suas seis fases, a [`runx`](https://github.com/bittencourtthulio/runx) continua com seus cinco estágios. O que muda é o **rigor** de cada etapa, nunca a sequência.
+`legadox` **não é um terceiro método**. A [`sprintx`](https://github.com/AxisGov/sprintx) continua com suas seis fases, a [`runx`](https://github.com/AxisGov/runx) continua com seus cinco estágios. O que muda é o **rigor** de cada etapa, nunca a sequência.
 
 O gatilho é um arquivo.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/bittencourtthulio/legadox/main/.github/assets/gatilho-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/bittencourtthulio/legadox/main/.github/assets/gatilho-light.svg">
-  <img alt="O gatilho do modo legado: o arquivo docs/legado/PERFIL.md" src="https://raw.githubusercontent.com/bittencourtthulio/legadox/main/.github/assets/gatilho-light.svg" width="100%">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/AxisGov/legadox/main/.github/assets/gatilho-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/AxisGov/legadox/main/.github/assets/gatilho-light.svg">
+  <img alt="O gatilho do modo legado: o arquivo docs/legado/PERFIL.md" src="https://raw.githubusercontent.com/AxisGov/legadox/main/.github/assets/gatilho-light.svg" width="100%">
 </picture>
 
 Sem `PERFIL.md`, o legadox não existe. Com ele, cada trabalho passa por um cálculo de risco antes de virar plano — e é esse cálculo que decide quanto peso aplicar.
@@ -97,9 +97,9 @@ Sem `PERFIL.md`, o legadox não existe. Com ele, cada trabalho passa por um cál
 É a peça central, e existe para que o método **não seja pesado onde não precisa ser**. A maioria dos trabalhos cai em BAIXO e roda exatamente como rodava antes.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/bittencourtthulio/legadox/main/.github/assets/raio-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/bittencourtthulio/legadox/main/.github/assets/raio-light.svg">
-  <img alt="O raio de impacto: os oito sinais, as tres faixas e o que cada uma aciona" src="https://raw.githubusercontent.com/bittencourtthulio/legadox/main/.github/assets/raio-light.svg" width="100%">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/AxisGov/legadox/main/.github/assets/raio-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/AxisGov/legadox/main/.github/assets/raio-light.svg">
+  <img alt="O raio de impacto: os oito sinais, as tres faixas e o que cada uma aciona" src="https://raw.githubusercontent.com/AxisGov/legadox/main/.github/assets/raio-light.svg" width="100%">
 </picture>
 
 **Faixas** — limiares padrão, editáveis pelo time no próprio `PERFIL.md`:
@@ -136,9 +136,9 @@ A faixa **nunca é escolhida por sensação** — é calculada pelos sinais. E s
 ## As 11 camadas
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/bittencourtthulio/legadox/main/.github/assets/camadas-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/bittencourtthulio/legadox/main/.github/assets/camadas-light.svg">
-  <img alt="As 11 camadas do legadox e a faixa de raio que aciona cada uma" src="https://raw.githubusercontent.com/bittencourtthulio/legadox/main/.github/assets/camadas-light.svg" width="100%">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/AxisGov/legadox/main/.github/assets/camadas-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/AxisGov/legadox/main/.github/assets/camadas-light.svg">
+  <img alt="As 11 camadas do legadox e a faixa de raio que aciona cada uma" src="https://raw.githubusercontent.com/AxisGov/legadox/main/.github/assets/camadas-light.svg" width="100%">
 </picture>
 
 | # | Camada | O que faz |
@@ -162,7 +162,7 @@ A faixa **nunca é escolhida por sensação** — é calculada pelos sinais. E s
 O instalador monta a estrutura **dos dois harnesses de uma vez**:
 
 ```bash
-git clone https://github.com/bittencourtthulio/legadox.git
+git clone https://github.com/AxisGov/legadox.git
 cd legadox
 ./install.sh
 ```
@@ -376,7 +376,7 @@ Os sete hooks gravam num arquivo append-only, uma linha JSON por evento, seguind
 docs/eventos/<trabalho_id>.jsonl
 ```
 
-É o que o **painel de operação** (`npx expxdev panel`) lê para mostrar o que aconteceu e quando — inclusive cada `regra_violada` e cada `acao_bloqueada`. É também o dado que diz quais hooks já rodaram tempo suficiente em modo aviso para serem promovidos a bloqueio.
+É o que o **painel de operação** (`expx panel`) lê para mostrar o que aconteceu e quando — inclusive cada `regra_violada` e cada `acao_bloqueada`. É também o dado que diz quais hooks já rodaram tempo suficiente em modo aviso para serem promovidos a bloqueio.
 
 ---
 
@@ -443,11 +443,11 @@ Abra uma issue descrevendo o caso concreto antes de mandar um PR grande. Mudanç
 
 <div align="center">
 <sub>Parte do método <strong>Expx</strong> ·
-<a href="https://github.com/bittencourtthulio/expxdev">expxdev</a> ·
-<a href="https://github.com/bittencourtthulio/buildx">buildx</a> ·
-<a href="https://github.com/bittencourtthulio/sprintx">sprintx</a> ·
-<a href="https://github.com/bittencourtthulio/runx">runx</a> ·
+<a href="https://github.com/AxisGov/expxdev">expxdev</a> ·
+<a href="https://github.com/AxisGov/buildx">buildx</a> ·
+<a href="https://github.com/AxisGov/sprintx">sprintx</a> ·
+<a href="https://github.com/AxisGov/runx">runx</a> ·
 legadox ·
-<a href="https://github.com/bittencourtthulio/stackx">stackx</a> ·
-<a href="https://github.com/bittencourtthulio/mergex">mergex</a></sub>
+<a href="https://github.com/AxisGov/stackx">stackx</a> ·
+<a href="https://github.com/AxisGov/mergex">mergex</a></sub>
 </div>

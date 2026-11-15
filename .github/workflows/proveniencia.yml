@@ -1,0 +1,19 @@
+name: proveniencia
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  origem:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: bash scripts/ci/test-proveniencia.sh
+      - run: bash scripts/ci/test-proveniencia-contrato.sh
