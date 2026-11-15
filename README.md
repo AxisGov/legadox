@@ -43,7 +43,7 @@ O método Expx é um conjunto de skills que se compõem, instaladas e mantidas p
 
 | Peça | Papel | Relação com o `legadox` |
 |---|---|---|
-| **[expxdev](https://github.com/AxisGov/expxdev)** | o CLI: instala, atualiza e diagnostica o ecossistema, e sobe o painel de operação | é quem instala esta skill (`expx init`) |
+| **[expxdev](https://github.com/AxisGov/expxdev)** | o CLI: instala, atualiza e diagnostica o ecossistema, e sobe o painel de operação | é quem instala esta skill (`expx init`, com o CLI instalado pela [release do expxdev](https://github.com/AxisGov/expxdev#instalar-a-partir-da-release)) |
 | **[sprintx](https://github.com/AxisGov/sprintx)** | **Build** — feature nova, F1…F6 | o legadox endurece cada uma das seis fases |
 | **[runx](https://github.com/AxisGov/runx)** | **Run** — ocorrência em produção, E1…E5 | o legadox endurece cada um dos cinco estágios |
 | **legadox** *(este repositório)* | **camada** de segurança para código legado | — |
