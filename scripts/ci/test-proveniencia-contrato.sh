@@ -163,6 +163,18 @@ printf '%s\n' '        continue-on-error: true' >> "$repo_coe/.github/workflows/
 git -C "$repo_coe" add .github/workflows/proveniencia.yml
 git -C "$repo_coe" -c user.name=Fixture -c user.email=fixture@example.invalid commit -qm 'fixture: continue-on-error'
 esperar_falha continue_on_error "$repo_coe"
+for grafia in coe_aspas_duplas coe_aspas_simples coe_fluxo; do
+  repo_g="$(nova_fixture "$grafia")"
+  case "$grafia" in
+    coe_aspas_duplas) linha='        "continue-on-error": true' ;;
+    coe_aspas_simples) linha="        'continue-on-error': true" ;;
+    coe_fluxo) linha='      - { run: "true", continue-on-error: true }' ;;
+  esac
+  printf '%s\n' "$linha" >> "$repo_g/.github/workflows/proveniencia.yml"
+  git -C "$repo_g" add .github/workflows/proveniencia.yml
+  git -C "$repo_g" -c user.name=Fixture -c user.email=fixture@example.invalid commit -qm "fixture: $grafia"
+  esperar_falha "$grafia" "$repo_g"
+done
 repo_qtd="$(nova_fixture quantidade_grande)"
 rastrear_texto "$repo_qtd" docs/historico.md "https://$github_host/$proprietario/runx"
 printf 'docs/historico.md\tgithub%%2Ecom/bittencourtthulio/runx\t99999999999999999999\thistorico\tquantidade alem do inteiro do shell\n' \

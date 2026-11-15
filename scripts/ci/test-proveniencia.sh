@@ -237,7 +237,8 @@ LC_ALL=C awk '
   printf 'evento pull_request ausente ou filtrado no workflow de proveniencia\n' >&2
   exit 1
 }
-if grep -Eq '^[[:space:]]*continue-on-error:' "$workflow"; then
+# a chave em qualquer grafia YAML: com ou sem aspas, em bloco ou em mapa de fluxo (Codex)
+if grep -Eq "[\"']?continue-on-error[\"']?[[:space:]]*:" "$workflow"; then
   printf 'continue-on-error no workflow de proveniencia: a falha do guarda deixaria de reprovar o job\n' >&2
   exit 1
 fi
