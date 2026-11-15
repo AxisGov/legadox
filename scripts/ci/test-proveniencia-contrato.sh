@@ -182,6 +182,28 @@ printf 'docs/historico.md\tgithub%%2Ecom/bittencourtthulio/runx\t999999999999999
 git -C "$repo_qtd" add scripts/ci/proveniencia-allowlist.tsv
 git -C "$repo_qtd" -c user.name=Fixture -c user.email=fixture@example.invalid commit -qm 'fixture: quantidade grande'
 esperar_falha quantidade_grande "$repo_qtd"
+# Segunda rodada do CodeRabbit: `--package=expxdev`; a URL do upstream dentro de uma
+# opção do npx não se esconde atrás da exceção do npx; a origem canônica com `.git`;
+# `if:` no workflow dedicado ao guarda
+caso_bloqueado npx_package_igual docs/ecossistema.md "npx --package=""expxdev expx init"
+repo_url_opcao="$(nova_fixture npx_url_na_opcao)"
+rastrear_texto "$repo_url_opcao" docs/historico.md \
+  "npx --package=https://$github_host/$proprietario/runx ""expxdev init"
+adicionar_excecao "$repo_url_opcao" docs/historico.md 'npx%20expxdev' 'historico' 'so o npx autorizado'
+esperar_falha npx_url_na_opcao "$repo_url_opcao"
+repo_git="$(nova_fixture readme_com_ponto_git)"
+sed "s#AxisGov/runx\$#AxisGov/runx.git#" "$repo_git/README.md" > "$repo_git/README.tmp" \
+  && mv "$repo_git/README.tmp" "$repo_git/README.md"
+git -C "$repo_git" add README.md
+git -C "$repo_git" -c user.name=Fixture -c user.email=fixture@example.invalid commit -qm 'fixture: origem com .git'
+esperar_sucesso readme_com_ponto_git "$repo_git"
+repo_if="$(nova_fixture if_no_workflow)"
+sed 's#^    steps:#    if: github.event_name == '"'"'push'"'"'\n    steps:#' "$repo_if/.github/workflows/proveniencia.yml" > "$repo_if/wf.tmp" \
+  && mv "$repo_if/wf.tmp" "$repo_if/.github/workflows/proveniencia.yml"
+grep -q "if: github.event_name" "$repo_if/.github/workflows/proveniencia.yml" || { echo "FALHA: fixture if_no_workflow nao montou" >&2; exit 1; }
+git -C "$repo_if" add .github/workflows/proveniencia.yml
+git -C "$repo_if" -c user.name=Fixture -c user.email=fixture@example.invalid commit -qm 'fixture: if no job'
+esperar_falha if_no_workflow "$repo_if"
 
 repo_atributo="$(nova_fixture atributo_binary)"
 rastrear_texto "$repo_atributo" bootstrap.sh \

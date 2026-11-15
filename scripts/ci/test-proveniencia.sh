@@ -4,7 +4,7 @@ set -euo pipefail
 raiz="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$raiz"
 
-legada_base='((github[.]com[/:]|raw[.]githubusercontent[.]com/)bittencourtthulio/(runx|mergex|sprintx|buildx|expxdev|legadox|stackx|memox|prodx|designx)([.]git)?|bittencourtthulio[.]github[.]io/expxdev|npx([[:space:]]+-[^[:space:]]+)*[[:space:]]+expxdev)'
+legada_base='((github[.]com[/:]|raw[.]githubusercontent[.]com/)bittencourtthulio/(runx|mergex|sprintx|buildx|expxdev|legadox|stackx|memox|prodx|designx)([.]git)?|bittencourtthulio[.]github[.]io/expxdev|npx([[:space:]]+-[^[:space:]/:]+)*[[:space:]]+(--package=)?expxdev)'
 legada="$legada_base([^[:alnum:]_.-]|[.]([^[:alnum:]_-]|$)|$)"
 allowlist='scripts/ci/proveniencia-allowlist.tsv'
 separador=$'\x1f'
@@ -188,7 +188,7 @@ done
 
 if [ -f src/nucleo/catalogo.ts ]; then
   for repo in runx mergex sprintx buildx; do
-    grep -Eq "https://github[.]com/AxisGov/$repo([^[:alnum:]_.-]|[.]([^[:alnum:]_-]|$)|$)" src/nucleo/catalogo.ts || {
+    grep -Eq "https://github[.]com/AxisGov/$repo([.]git)?([^[:alnum:]_.-]|[.]([^[:alnum:]_-]|$)|$)" src/nucleo/catalogo.ts || {
       printf 'catalogo sem origem canonica AxisGov/%s\n' "$repo" >&2
       exit 1
     }
@@ -196,7 +196,7 @@ if [ -f src/nucleo/catalogo.ts ]; then
   grep -q 'https://github.com/AxisGov/expxdev' package.json
 else
   for repo in runx mergex sprintx buildx expxdev; do
-    grep -Eq "https://github[.]com/AxisGov/$repo([^[:alnum:]_.-]|[.]([^[:alnum:]_-]|$)|$)" README.md || {
+    grep -Eq "https://github[.]com/AxisGov/$repo([.]git)?([^[:alnum:]_.-]|[.]([^[:alnum:]_-]|$)|$)" README.md || {
       printf 'README sem origem canonica AxisGov/%s\n' "$repo" >&2
       exit 1
     }
@@ -237,6 +237,10 @@ LC_ALL=C awk '
   printf 'evento pull_request ausente ou filtrado no workflow de proveniencia\n' >&2
   exit 1
 }
+if [ "$workflow" = .github/workflows/proveniencia.yml ] && grep -Eq "[\"']?if[\"']?[[:space:]]*:" "$workflow"; then
+  printf 'if no workflow de proveniencia: o guarda deixaria de rodar em parte dos eventos\n' >&2
+  exit 1
+fi
 # a chave em qualquer grafia YAML: com ou sem aspas, em bloco ou em mapa de fluxo (Codex)
 if grep -Eq "[\"']?continue-on-error[\"']?[[:space:]]*:" "$workflow"; then
   printf 'continue-on-error no workflow de proveniencia: a falha do guarda deixaria de reprovar o job\n' >&2
